@@ -59,7 +59,7 @@ pipeline {
                         git fetch origin ${MANIFEST_BRANCH}
                         git checkout -B ${MANIFEST_BRANCH} origin/${MANIFEST_BRANCH}
 
-                        sed -i 's|image: ashin2002/maker.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|' manifests/deployment.yaml
+                        sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|' manifests/deployment.yaml
 
                         git diff --quiet || {
                             git commit -am "chore(manifest): update maker image tag to ${env.BUILD_NUMBER} [skip ci]"
