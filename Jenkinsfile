@@ -51,7 +51,6 @@ pipeline {
 
        stage('Update Manifest Repo') {
             steps {
-                dir('manifest-workspace') {
                     withCredentials([usernamePassword(credentialsId: 'github-cred', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
                         sh """
                             # Configure remote URL with properly escaped variables for pushing
@@ -70,8 +69,8 @@ pipeline {
                     }
                 }
             }
-        }
-    }
+        
+    
     post {
         success {
             echo 'Pipeline executed successfully! Manifest repo updated with new image tag.'
