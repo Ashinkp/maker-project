@@ -55,7 +55,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'github-cred', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
                         sh """
                             # Configure remote URL with properly escaped variables for pushing
-                            git remote set-url origin https://\${GH_USER}:\${GH_TOKEN}@https://github.com/Ashinkp/maker-project.git
+                            git remote set-url origin https://\${GH_USER}:\${GH_TOKEN}@github.com/Ashinkp/maker-project.git
                             
                             # Fetch and rebase to get any latest changes from remote
                             git pull --rebase origin main
