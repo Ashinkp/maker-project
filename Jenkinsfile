@@ -3,11 +3,10 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-cred'
-        DOCKER_IMAGE          = 'ashin2002/maker' // Format: username/maker
-        SONAR_SERVER_NAME     = 'sonarqube-env' 
-        SONAR_SCANNER_TOOL    = 'sonarqube-scanner'     
+        DOCKER_IMAGE          = 'ashin2002/maker'
+        SONAR_SERVER_NAME     = 'sonarqube-env'
+        SONAR_SCANNER_TOOL    = 'sonarqube-scanner'
         GIT_CREDENTIALS_ID    = 'github-cred'
-        MANIFEST_REPO         = 'https://github.com/Ashinkp/maker-project.git'
         MANIFEST_BRANCH       = 'main'
     }
 
@@ -33,23 +32,23 @@ pipeline {
         }
 
         stage('Build & Post Docker Image') {
-    steps {
-        script {
-            withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                sh """
-                    echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
-                    
-                    docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE}:latest -f Dockerfile .
-                    
-                    docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}
-                    docker push ${DOCKER_IMAGE}:latest
-                """
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                            echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
+
+                            docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE}:latest -f Dockerfile .
+
+                            docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}
+                            docker push ${DOCKER_IMAGE}:latest
+                        """
+                    }
+                }
             }
         }
-    }
-}
 
-            stage('Update Manifest Repo') {
+        stage('Update Manifest Repo') {
             steps {
                 withCredentials([usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
                     sh """
@@ -70,7 +69,8 @@ pipeline {
                 }
             }
         }
-    
+    }
+
     post {
         success {
             echo 'Pipeline executed successfully! Manifest repo updated with new image tag.'
