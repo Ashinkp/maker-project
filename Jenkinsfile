@@ -49,27 +49,27 @@ pipeline {
     }
 }
 
-       stage('Update Manifest Repo') {
+            stage('Update Manifest Repo') {
             steps {
-                    withCredentials([usernamePassword(credentialsId: 'github-cred', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-                        sh """
-                            # Configure remote URL with properly escaped variables for pushing
-                            git remote set-url origin https://\${GH_USER}:\${GH_TOKEN}@github.com/Ashinkp/maker-project.git
-                            
-                            # Fetch and rebase to get any latest changes from remote
-                            git pull --rebase origin main
-                            
-                            # Perform sed update, commit, and push
-                            sed -i '/name: maker/{n;s|image:.*|image: ashin2002/maker:${env.BUILD_NUMBER}|}' manifests/deployment.yaml
-                            git config user.name "Ashinkp"
-                            git config user.email "ashinkp33@gmail.com"
+                withCredentials([usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
+                    sh """
+                        git config user.name "Ashinkp"
+                        git config user.email "ashinkp33@gmail.com"
+                        git remote set-url origin https://\${GH_USER}:\${GH_TOKEN}@github.com/Ashinkp/maker-project.git
+
+                        git fetch origin ${MANIFEST_BRANCH}
+                        git checkout -B ${MANIFEST_BRANCH} origin/${MANIFEST_BRANCH}
+
+                        sed -i 's|image: ashin2002/maker.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|' manifests/deployment.yaml
+
+                        git diff --quiet || {
                             git commit -am "chore(manifest): update maker image tag to ${env.BUILD_NUMBER} [skip ci]"
-                            git push origin main
-                        """
-                    }
+                            git push origin ${MANIFEST_BRANCH}
+                        }
+                    """
                 }
             }
-    }
+        }
     
     post {
         success {
